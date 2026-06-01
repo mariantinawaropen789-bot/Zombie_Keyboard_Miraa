@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zombie Keyboard Survival ⌨️🧟</title>
+    <!-- Tailwind CSS untuk tata letak modern -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Share+Tech+Mono&display=swap');
+        
+        .font-horror {
+            font-family: 'Creepster', cursive;
+        }
+        .font-mono-tech {
+            font-family: 'Share Tech Mono', monospace;
+        }
+        
+        /* Animasi Kabut Malam */
+        @keyframes fogMove {
+            0% { transform: translateX(-10%) translateY(0); }
+            50% { transform: translateX(10%) translateY(5px); }
+            100% { transform: translateX(-10%) translateY(0); }
+        }
+        .fog-bg {
+            animation: fogMove 20s ease-in-out infinite;
+        }
+
+        /* Scanline effect untuk nuansa retro tegang */
+        .scanlines {
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.06),
+                rgba(0, 255, 0, 0.02),
+                rgba(0, 0, 255, 0.06)
+            );
+            background-size: 100% 4px, 6px 100%;
+        }
+
+        /* Animasi zombie berjalan goyang */
+        @keyframes zombieSway {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+        .zombie-sway {
+            animation: zombieSway 1s ease-in-out infinite;
+        }
+
+        /* Guncangan layar saat diserang */
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0); }
+            10%, 30%, 50%, 70%, 90% { transform: translate(-10px, -5px); }
+            20%, 40%, 60%, 80% { transform: translate(10px, 5px); }
+        }
+        .shake-screen {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        /* Sembunyikan scrollbar */
+        body {
+            scrollbar-width: none;
+        }
+        body::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-white font-mono-tech overflow-hidden h-screen select-none">
+
+    <!-- Efek scanline di seluruh layar untuk menambah atmosfer tegang -->
+    <div class="absolute inset-0 scanlines pointer-events-none z-50 opacity-40"></div>
+
+    <!-- UI UTAMA GAME -->
+    <div id="app" class="relative w-full h-full flex flex-col justify-between overflow-hidden">
+        
+        <!-- LATAR BELAKANG GAMBAR UTAMA DENGAN OPASITAS TINGGI (85%) -->
+        <div class="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-85 transition-opacity duration-1000" 
+             style="background-image: url('https://img.magnific.com/free-photo/electricity-nature-collide-spooky-silhouette-dusk-generative-ai_188544-12558.jpg?semt=ais_hybrid&w=740&q=80');">
+        </div>
+        
+        <!-- Gradien Lembut untuk menyelimuti HUD atas dan Kolom bawah agar teks tetap terbaca, tengah layar tetap terang benderang -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/90 via-transparent to-black/90 z-0"></div>
+        
+        <!-- Grafis Kuburan & Pohon Kering di Latar Belakang (SVG) -->
+        <svg class="absolute bottom-0 left-0 w-full h-1/3 opacity-20 pointer-events-none z-0" viewBox="0 0 1440 300" preserveAspectRatio="none">
+            <path d="M0,280 L1440,280 L1440,300 L0,300 Z" fill="#030712"/>
+            <!-- Bukit-bukit kecil -->
+            <path d="M-100,280 Q200,220 500,280 T1100,280 T1600,280" fill="#090d16"/>
+            <!-- Siluet Kuburan -->
+            <g fill="#1f2937">
+                <!-- Nisan 1 -->
+                <rect x="150" y="220" width="30" height="50" rx="15" />
+                <line x1="165" y1="230" x2="165" y2="260" stroke="#111827" stroke-width="4"/>
+                <line x1="155" y1="240" x2="175" y2="240" stroke="#111827" stroke-width="4"/>
+                <!-- Nisan 2 -->
+                <rect x="400" y="235" width="25" height="40" rx="5" />
+                <!-- Nisan 3 -->
+                <rect x="850" y="210" width="35" height="60" rx="17" />
+                <line x1="867" y1="225" x2="867" y2="260" stroke="#111827" stroke-width="4"/>
+                <line x1="857" y1="235" x2="877" y2="235" stroke="#111827" stroke-width="4"/>
+                <!-- Nisan Rusak -->
+                <g transform="rotate(15, 1100, 240)">
+                    <rect x="1100" y="230" width="25" height="45" rx="5" />
+                </g>
+            </g>
+            <!-- Siluet Pohon Mati -->
+            <path d="M1250,280 L1255,150 Q1240,110 1210,120 M1255,180 Q1280,140 1310,150 M1253,165 Q1230,130 1240,100" stroke="#0f172a" stroke-width="8" stroke-linecap="round" fill="none" />
+            <path d="M100,280 L105,130 Q80,90 60,110 M105,170 Q130,130 140,120" stroke="#0f172a" stroke-width="6" stroke-linecap="round" fill="none" />
+        </svg>
+
+        <!-- Kabut bergerak lembut -->
+        <div class="absolute inset-x-0 bottom-0 h-1/2 opacity-20 pointer-events-none z-0 bg-repeat-x fog-bg" style="background-image: url('data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;1000&quot; height=&quot;300&quot; viewBox=&quot;0 0 1000 300&quot;><path d=&quot;M0,150 Q250,100 500,150 T1000,150 L1000,300 L0,300 Z&quot; fill=&quot;%2310b981&quot;/></svg>'); background-size: 1000px 100%;"></div>
+
+        <!-- MENU UTAMA (Disatukan dalam satu panel terpadu agar tidak terpotong) -->
+        <div id="main-menu" class="absolute inset-0 flex flex-col items-center justify-center p-3 z-40 bg-black/95">
+            
+            <div class="relative overflow-hidden max-w-xl w-full bg-slate-900/95 border-2 border-red-900/50 p-4 rounded-xl backdrop-blur-sm text-center shadow-2xl flex flex-col gap-3">
+                
+                <!-- Gambar Zombie Tangan Menggapai Transparan (Latar Belakang Tabel) -->
+                <div class="absolute bottom-[-15px] right-2 w-24 h-24 opacity-10 pointer-events-none select-none">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full text-emerald-500 stroke-emerald-500">
+                        <path d="M40,90 L42,60 Q38,55 35,45 L32,48 Q30,40 33,35 L37,38 Q38,28 42,25 L45,30 Q48,22 52,22 L53,28 Q56,25 59,28 L57,35 Q62,35 63,40 L59,45 Q61,50 58,55 L54,65 L56,90 Z" fill="currentColor" />
+                    </svg>
+                </div>
+
+                <!-- Gambar Kepala Zombie Siluet Transparan di Sisi Kiri Atas -->
+                <div class="absolute top-1 left-1 w-12 h-12 opacity-10 pointer-events-none select-none">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full text-red-500">
+                        <circle cx="50" cy="50" r="40" fill="currentColor" />
+                        <path d="M25,25 L35,35" stroke="#000" stroke-width="5" />
+                        <path d="M75,25 L65,35" stroke="#000" stroke-width="5" />
+                        <path d="M30,65 Q50,85 70,65" stroke="#000" stroke-width="5" fill="none" />
+                    </svg>
+                </div>
+
+                <!-- Judul Terpadu di dalam Panel -->
+                <div class="relative z-10 mb-1">
+                    <h1 class="font-horror text-red-600 text-4xl sm:text-5xl tracking-wider drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] animate-pulse">
+                        ZOMBIE KEYBOARD
+                    </h1>
+                    <h2 class="font-horror text-emerald-500 text-xl sm:text-2xl tracking-widest mt-0.5">
+                        SURVIVAL
+                    </h2>
+                </div>
+
+                <div class="relative z-10 flex flex-col gap-2">
+                    <p class="text-gray-300 text-[10px] sm:text-xs mb-1 leading-relaxed">
+                        Wabah mayat hidup menyerang! Senjatamu hanyalah kecepatan mengetikmu. Ketik kata-kata misterius di atas zombie untuk menembak mereka sebelum gerbang pertahananmu hancur!
+                    </p>
+                    
+                    <div class="grid grid-cols-2 gap-2 text-left border-t border-b border-gray-800 py-1.5 my-1">
+                        <div>
+                            <span class="text-emerald-400 font-bold text-[10px] sm:text-xs block mb-0.5">📋 Zombie Biasa:</span>
+                            <p class="text-[9px] sm:text-[10px] text-gray-400 leading-tight">Berjalan santai tetapi terus bertambah banyak tanpa pengulangan kata.</p>
+                        </div>
+                        <div>
+                            <span class="text-red-400 font-bold text-[10px] sm:text-xs block mb-0.5">☠️ Boss Zombie:</span>
+                            <p class="text-[9px] sm:text-[10px] text-gray-400 leading-tight">Muncul di setiap gelombang dengan kalimat yang epik.</p>
+                        </div>
+                    </div>
+
+                    <div class="text-[9px] sm:text-[10px] text-gray-400 mb-1">
+                        <span class="text-amber-400 font-bold">Fitur Baru:</span> Sistem Kosakata Antri Acak cerdas, dijamin tidak ada kata yang terulang sebelum semua kosakata selesai digunakan!
+                    </div>
+                </div>
+
+                <!-- PILIHAN BAHASA KOSAKATA -->
+                <div class="text-center z-10 border-t border-gray-800/80 pt-3">
+                    <span class="text-[9px] text-gray-400 block mb-1 uppercase font-bold tracking-wider">PILIH BAHASA KOSAKATA:</span>
+                    <div class="inline-flex rounded-md shadow-sm" role="group">
+                        <button id="btn-lang-id" onclick="setLanguage('id')" class="px-3 py-1 text-[10px] sm:text-xs font-bold text-gray-300 bg-slate-800 border border-slate-700 rounded-l-md hover:bg-slate-700 transition-colors">
+                            INDONESIA 🇮🇩
+                        </button>
+                        <button id="btn-lang-en" onclick="setLanguage('en')" class="px-3 py-1 text-[10px] sm:text-xs font-bold text-gray-300 bg-slate-800 border-t border-b border-r border-slate-700 hover:bg-slate-700 transition-colors">
+                            ENGLISH 🇬🇧
+                        </button>
+                        <button id="btn-lang-mix" onclick="setLanguage('mix')" class="px-3 py-1 text-[10px] sm:text-xs font-bold text-emerald-400 bg-slate-700 border border-slate-700 rounded-r-md hover:bg-slate-600 transition-colors">
+                            CAMPURAN 🇮🇩🇬🇧
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TOMBOL PLAY -->
+                <div class="w-full mt-1 z-10">
+                    <button onclick="startGame(1)" class="w-full bg-red-800 hover:bg-red-700 active:scale-95 text-white font-horror text-lg sm:text-xl py-2.5 px-3 rounded-lg shadow-lg border-b-4 border-red-950 transition-all duration-150">
+                        SINGLE PLAYER 👤
+                    </button>
+                </div>
+                
+                <p class="text-gray-500 text-[8px] sm:text-[9px] z-10">Ketuk atau klik tombol di atas untuk memulai. Pastikan suara aktif!</p>
+            </div>
+        </div>
+
+        <header class="relative z-10 w-full p-4 bg-gradient-to-b from-black/80 to-transparent flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="font-horror text-red-500 text-2xl tracking-wider">BENTENG:</div>
+                <div class="w-32 sm:w-48 bg-gray-900 border border-red-500/50 h-6 rounded-full overflow-hidden p-0.5 relative">
+                    <div id="hp-bar" class="bg-red-600 h-full w-full rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(239,68,68,0.5)]"></div>
+                    <span id="hp-text" class="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow">100 / 100</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 text-xs sm:text-base">
+                <div class="bg-black/40 border border-emerald-500/30 px-3 py-1.5 rounded">
+                    WAVE: <span id="wave-num" class="text-emerald-400 font-bold text-base sm:text-lg">1</span>
+                </div>
+                <div class="bg-black/40 border border-amber-500/30 px-3 py-1.5 rounded">
+                    SKOR: <span id="score" class="text-amber-400 font-bold text-base sm:text-lg">0</span>
+                </div>
+                <div class="bg-black/40 border border-blue-500/30 px-3 py-1.5 rounded">
+                    WPM: <span id="wpm-display" class="text-blue-400 font-bold text-base sm:text-lg">0</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span id="player-mode-tag" class="text-xs bg-slate-800 px-3 py-1 rounded-full border border-slate-700 text-slate-300"></span>
+                <button id="music-toggle" onclick="toggleMute()" class="bg-gray-800 hover:bg-gray-700 text-white p-2 rounded border border-gray-700 text-xs">
+                    🔊 Suara: AKTIF
+                </button>
+                <button onclick="quitToMenu()" class="bg-red-950/80 hover:bg-red-900 text-red-200 px-3 py-1.5 rounded border border-red-800/40 text-xs font-bold">
+                    KELUAR
+                </button>
+            </div>
+        </header>
+
+        <div id="coop-keyboard-info" class="hidden relative z-10 mx-auto w-full max-w-3xl px-4 flex justify-between gap-4 text-xs">
+            <div class="bg-red-950/60 border border-red-500/30 p-2 rounded flex-1 text-center">
+                <span class="text-red-400 font-bold block">👤 PEMAIN 1 (ZOMBIE MERAH)</span>
+                Ketik Kata Merah (Menggunakan seluruh keyboard biasa)
+            </div>
+            <div class="bg-teal-950/60 border border-teal-500/30 p-2 rounded flex-1 text-center">
+                <span class="text-teal-400 font-bold block">👥 PEMAIN 2 (ZOMBIE BIRU)</span>
+                Ketik Kata Biru (Menggunakan seluruh keyboard biasa)
+            </div>
+        </div>
+
+        <main id="game-stage" class="relative flex-grow w-full z-10 flex flex-col justify-end pb-8">
+            <div class="absolute bottom-4 inset-x-0 h-4 bg-gradient-to-t from-red-950/50 to-transparent border-t-2 border-red-500/40 pointer-events-none flex justify-center">
+                <span class="text-[10px] text-red-500/60 tracking-widest font-bold -translate-y-4">BATAS PERTAHANAN BENTENG</span>
+            </div>
+
+            <div id="zombie-container" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+
+            <div id="laser-effect" class="absolute inset-0 pointer-events-none z-30 opacity-0 bg-red-500/10 transition-opacity duration-100"></div>
+        </main>
+
+        <footer class="relative z-10 p-4 bg-black/80 border-t border-slate-900 flex flex-col items-center gap-2">
+            <div class="flex justify-center gap-4 w-full max-w-3xl">
+                <div id="input-box-p1" class="flex-1 bg-slate-950/90 border-2 border-red-600/50 px-4 py-3 rounded-lg text-center shadow-lg">
+                    <div class="text-[10px] text-red-500 font-bold tracking-wider mb-1">KETIKAN PEMAIN 1</div>
+                    <div id="typed-text-p1" class="font-mono-tech text-2xl tracking-widest text-red-400 min-h-[2rem]"></div>
+                </div>
+                
+                <div id="input-box-p2" class="hidden flex-1 bg-slate-950/90 border-2 border-teal-600/50 px-4 py-3 rounded-lg text-center shadow-lg">
+                    <div class="text-[10px] text-teal-400 font-bold tracking-wider mb-1">KETIKAN PEMAIN 2</div>
+                    <div id="typed-text-p2" class="font-mono-tech text-2xl tracking-widest text-teal-400 min-h-[2rem]"></div>
+                </div>
+            </div>
+
+            <div class="block lg:hidden w-full text-center mt-1">
+                <button onclick="focusDummyInput()" class="bg-gray-800 hover:bg-gray-700 active:bg-gray-950 text-xs px-3 py-1.5 rounded border border-gray-700 text-gray-300">
+                    ⌨️ Tampilkan Keyboard Layar (Khusus Mobile/Tablet)
+                </button>
+                <input type="text" id="dummy-input" class="absolute opacity-0 -z-50 pointer-events-none w-1 h-1" autocomplete="off" autocapitalize="none" spellcheck="false" />
+            </div>
+        </footer>
+
+        <div id="game-over-modal" class="hidden absolute inset-0 bg-black/95 z-50 flex flex-col items-center justify-center p-3">
+            <h2 class="font-horror text-red-600 text-5xl md:text-7xl tracking-wider text-center drop-shadow-[0_4px_4px_rgba(0,0,0,0.9)] animate-bounce mb-1">
+                MATI KONYOL!
+            </h2>
+            <p class="text-emerald-500 text-sm md:text-base tracking-widest uppercase mb-3 text-center">Bentengmu telah dihancurkan oleh para mayat hidup</p>
+            
+            <div class="relative overflow-hidden bg-slate-900 border border-red-900/40 p-4 rounded-lg max-w-sm w-full text-center shadow-2xl mb-4">
+                
+                <div class="absolute bottom-1 left-1 w-16 h-16 opacity-15 pointer-events-none select-none">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full text-red-500">
+                        <path d="M40,90 L42,60 Q38,55 35,45 L32,48 Q30,40 33,35 L37,38 Q38,28 42,25 L45,30 Q48,22 52,22 L53,28 Q56,25 59,28 L57,35 Q62,35 63,40 L59,45 Q61,50 58,55 L54,65 L56,90 Z" fill="currentColor" />
+                    </svg>
+                </div>
+
+                <div class="relative z-10">
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mb-0.5">Hasil Akhir Pertahanan:</div>
+                    <div class="text-2xl font-bold text-amber-400 mb-2" id="final-score">0</div>
+
+                    <div class="grid grid-cols-2 gap-x-2 gap-y-1.5 text-xs text-left border-t border-slate-800 pt-2.5">
+                        <div class="text-gray-400">Total Wave:</div>
+                        <div class="text-right text-white font-bold" id="final-wave">1</div>
+                        <div class="text-gray-400">Zombie Dibasmi:</div>
+                        <div class="text-right text-white font-bold" id="final-kills">0</div>
+                        <div class="text-blue-400 font-bold">Rata-rata WPM:</div>
+                        <div class="text-right text-blue-400 font-bold" id="final-wpm">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
+                <button onclick="restartGame()" class="flex-1 bg-red-800 hover:bg-red-700 text-white font-horror text-xl py-2 px-4 rounded shadow border-b-4 border-red-950 transition-colors">
+                    COBA LAGI 🔄
+                </button>
+                <button onclick="quitToMenu()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-horror text-xl py-2 px-4 rounded shadow border-b-4 border-gray-950 transition-colors">
+                    MENU UTAMA 🏠
+                </button>
+            </div>
+        </div>
+
+        <div id="boss-warning" class="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center opacity-0 transition-opacity duration-300 bg-red-950/20">
+            <div class="bg-black/80 border-2 border-red-600 px-10 py-6 rounded-xl text-center shadow-[0_0_30px_rgba(239,68,68,0.5)] transform scale-90 transition-transform duration-300" id="boss-warning-box">
+                <div class="text-red-500 font-horror text-6xl tracking-widest animate-pulse mb-2">PERINGATAN!</div>
+                <div class="text-white text-lg tracking-wider font-bold">ZOMBIE RAKSASA SEGERA DATANG!</div>
+                <div class="text-gray-400 text-sm mt-2">Ketik kata tebal untuk menghentikannya!</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATABASE KOSAKATA LENGKAP & TERPISAH (ID & EN SEPENUHNYA LAIN DAN BERBEDA) ---
+        const DB_WORDS_ID = {
+            easy: [
+                "pintu", "kunci", "kursi", "meja", "lampu", "kaca", "rumah", "tanah", "hujan", "pasar",
+                "merah", "hijau", "hitam", "putih", "perak", "emas", "karet", "plastik", "botol", "gelas",
+                "piring", "sendok", "garpu", "wajan", "pisau", "ember", "sapu", "keset", "bantal", "guling",
+                "kasur", "selimut", "lemari", "dompet", "tas", "sepatu", "sandal", "kaos", "celana", "jaket"
+            ],
+            medium: [
+                "jendela", "dinding", "atap", "lantai", "pagar", "tangga", "lorong", "gudang", "dapur", "kamar",
+                "ruangan", "kantor", "sekolah", "kampus", "pabrik", "stasiun", "bandara", "pelabuhan", "terminal", "jalanan",
+                "trotoar", "jembatan", "sungai", "danau", "pantai", "gunung", "lembah", "hutan", "taman", "lapangan",
+                "kendaraan", "sepeda", "motor", "mobil", "kereta", "pesawat", "kapal", "perahu", "sirene", "klakson"
+            ],
+            hard: [
+                "arsitektur", "infrastruktur", "transportasi", "telekomunikasi", "industrialisasi", "modernisasi",
+                "urbanisasi", "digitalisasi", "elektronik", "mekanisasi", "otomatisasi", "komputerisasi",
+                "dokumentasi", "administrasi", "organisasi", "birokrasi", "karyawan", "direktur", "manajer", "supervisor",
+                "investasi", "transaksi", "keuangan", "perbankan", "perdagangan", "distribusi", "produksi", "konsumsi",
+                "pemasaran", "negosiasi", "kolaborasi", "komunikasi", "koordinasi", "integrasi", "implementasi", "evaluasi"
+            ],
+            boss: [
+                "SISTEM-KEAMANAN-BENTENG-PERTAHANAN-UTAMA",
+                "EVAKUASI-MASSAL-PENDUDUK-KOTA-DARI-BAHAYA",
+                "STRATEGI-TAKTIK-SURVIVAL-MENGHADAPI-PANDEMI",
+                "OPERASI-PENYELAMATAN-SANDERA-ZOMBIE-MUTAN",
+                "RESTORASI-EKOSISTEM-PASCA-SERANGAN-MONSTER",
+                "KOMANDO-TERTINGGI-PASUKAN-REVOLUSI-BENTENG",
+                "PROTOKOL-KEAMANAN-TINGKAT-TINGGI-BENCANA-ZOMBIE",
+                "KEMENANGAN-MUTLAK-PEJUANG-KETIKAN-CEPAT"
+            ]
+        };
+
+        const DB_WORDS_EN = {
+            easy: [
+                "door", "lock", "chair", "desk", "lamp", "glass", "house", "earth", "rain", "shop",
+                "red", "green", "black", "white", "silver", "gold", "rubber", "plastic", "bottle", "cup",
+                "plate", "spoon", "fork", "pan", "knife", "bucket", "broom", "mat", "pillow", "sheet",
+                "bed", "blanket", "closet", "wallet", "bag", "shoes", "boot", "shirt", "pants", "coat"
+            ],
+            medium: [
+                "window", "wall", "roof", "floor", "fence", "stairs", "hallway", "storage", "kitchen", "room",
+                "chamber", "office", "school", "college", "factory", "station", "airport", "harbor", "terminal", "street",
+                "sidewalk", "bridge", "river", "lake", "beach", "mountain", "valley", "forest", "park", "field",
+                "vehicle", "bicycle", "scooter", "truck", "train", "airplane", "ship", "boat", "siren", "horn"
+            ],
+            hard: [
+                "architecture", "infrastructure", "transportation", "telecommunication", "industrialization", "modernization",
+                "urbanization", "digitalization", "electronics", "mechanization", "automation", "computerization",
+                "documentation", "administration", "organization", "bureaucracy", "employee", "director", "manager", "supervisor",
+                "investment", "transaction", "finance", "banking", "commerce", "distribution", "production", "consumption",
+                "marketing", "negotiation", "collaboration", "communication", "coordination", "integration", "implementation", "evaluation"
+            ],
+            boss: [
+                "SECURITY-SYSTEM-FOR-THE-MAIN-FORTRESS",
+                "MASS-EVACUATION-OF-CITIZENS-FROM-DANGER",
+                "TACTICAL-SURVIVAL-STRATEGY-AGAINST-PANDEMIC",
+                "RESCUE-OPERATION-FOR-MUTANT-ZOMBIE-HOSTAGES",
+                "ECOSYSTEM-RESTORATION-POST-MONSTER-ATTACK",
+                "HIGH-COMMAND-OF-THE-FORTRESS-REVOLUTION-FORCE",
+                "EMERGENCY-PROTOCOL-FOR-CONTAMINATION-PREVENTION",
+                "ABSOLUTE-VICTORY-OF-FAST-TYPING-WARRIORS"
+            ]
+        };
+
+        // --- SISTEM DECK NO-REPEAT SINTETIS ---
+        let wordPools = {
+            easy: { words: [], index: 0 },
+            medium: { words: [], index: 0 },
+            hard: { words: [], index: 0 },
+            boss: { words: [], index: 0 }
+        };
+
+        // Bahasa Kosakata Aktif (Default: 'mix')
+        let activeLanguage = 'mix';
+
+        // Fungsi interaktif mengganti bahasa kosakata
+        function setLanguage(lang) {
+            playSound('click');
+            activeLanguage = lang;
+            
+            document.getElementById('btn-lang-id').className = "px-3 py-1 text-[10px] sm:text-xs font-bold text-gray-300 bg-slate-800 border border-slate-700 rounded-l-md hover:bg-slate-700 transition-colors";
+            document.getElementById('btn-lang-en').className = "px-3 py-1 text-[10px] sm:text-xs font-bold text-gray-300 bg-slate-800 border-t border-b border-r border-slate-700 hover:bg-slate-700 transition-colors";
+            document.getElementById('btn-lang-mix').className = "px-3 py-1 text-[10px] sm:text-xs font-bold text-gray-300 bg-slate-800 border border-slate-700 rounded-r-md hover:bg-slate-700 transition-colors";
+            
+            if (lang === 'id') {
+                document.getElementById('btn-lang-id').className = "px-3 py-1 text-[10px] sm:text-xs font-bold text-red-400 bg-slate-700 border border-slate-700 rounded-l-md hover:bg-slate-600 transition-colors";
+            } else if (lang === 'en') {
+                document.getElementById('btn-lang-en').className = "px-3 py-1 text-[10px] sm:text-xs font-bold text-blue-400 bg-slate-700 border-t border-b border-r border-slate-700 hover:bg-slate-600 transition-colors";
+            } else {
+                document.getElementById('btn-lang-mix').className = "px-3 py-1 text-[10px] sm:text-xs font-bold text-emerald-400 bg-slate-700 border border-slate-700 rounded-r-md hover:bg-slate-600 transition-colors";
+            }
+        }
+
+        // Mengacak array secara sempurna (Fisher-Yates Shuffle)
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                const temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+            return arr;
+        }
+
+        // Inisialisasi/Acak ulang seluruh tumpukan kata saat permainan dimulai berdasarkan bahasa aktif
+        function initWordPools() {
+            let activeEasy = [];
+            let activeMedium = [];
+            let activeHard = [];
+            let activeBoss = [];
+
+            if (activeLanguage === 'id') {
+                activeEasy = DB_WORDS_ID.easy;
+                activeMedium = DB_WORDS_ID.medium;
+                activeHard = DB_WORDS_ID.hard;
+                activeBoss = DB_WORDS_ID.boss;
+            } else if (activeLanguage === 'en') {
+                activeEasy = DB_WORDS_EN.easy;
+                activeMedium = DB_WORDS_EN.medium;
+                activeHard = DB_WORDS_EN.hard;
+                activeBoss = DB_WORDS_EN.boss;
+            } else {
+                activeEasy = [...DB_WORDS_ID.easy, ...DB_WORDS_EN.easy];
+                activeMedium = [...DB_WORDS_ID.medium, ...DB_WORDS_EN.medium];
+                activeHard = [...DB_WORDS_ID.hard, ...DB_WORDS_EN.hard];
+                activeBoss = [...DB_WORDS_ID.boss, ...DB_WORDS_EN.boss];
+            }
+
+            wordPools.easy.words = shuffleArray(activeEasy);
+            wordPools.easy.index = 0;
+
+            wordPools.medium.words = shuffleArray(activeMedium);
+            wordPools.medium.index = 0;
+
+            wordPools.hard.words = shuffleArray(activeHard);
+            wordPools.hard.index = 0;
+
+            wordPools.boss.words = shuffleArray(activeBoss);
+            wordPools.boss.index = 0;
+        }
+
+        // Mengambil kosakata berikutnya tanpa berulang
+        function getNextWordFromPool(type) {
+            let pool = wordPools[type];
+            if (!pool) pool = wordPools.easy;
+
+            if (pool.index >= pool.words.length) {
+                let sourceList = [];
+                if (activeLanguage === 'id') {
+                    sourceList = DB_WORDS_ID[type];
+                } else if (activeLanguage === 'en') {
+                    sourceList = DB_WORDS_EN[type];
+                } else {
+                    sourceList = [...DB_WORDS_ID[type], ...DB_WORDS_EN[type]];
+                }
+                pool.words = shuffleArray(sourceList);
+                pool.index = 0;
+            }
+
+            const chosenWord = pool.words[pool.index];
+            pool.index++;
+            return chosenWord.toLowerCase();
+        }
+
+        // --- SISTEM AUDIO SINTETIS (Web Audio API) ---
+        let audioCtx = null;
+        let isMuted = false;
+        let bgMusicInterval = null;
+        let bgMusicBeat = 0;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (isMuted || !audioCtx) return;
+            
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'shoot') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(80, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } 
+                else if (type === 'damage') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(120, now);
+                    osc.frequency.exponentialRampToValueAtTime(10, now + 0.35);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                }
+                else if (type === 'boss_roar') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(90, now);
+                    osc.frequency.linearRampToValueAtTime(45, now + 0.8);
+                    
+                    const vibrato = audioCtx.createOscillator();
+                    const vibratoGain = audioCtx.createGain();
+                    vibrato.frequency.value = 15;
+                    vibratoGain.gain.value = 25;
+                    
+                    vibrato.connect(vibratoGain);
+                    vibratoGain.connect(osc.frequency);
+                    
+                    vibrato.start(now);
+                    
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+                    
+                    osc.start(now);
+                    osc.stop(now + 0.8);
+                    vibrato.stop(now + 0.8);
+                }
+                else if (type === 'kill') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                }
+                else if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(2000, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                }
+                else if (type === 'gameover') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.linearRampToValueAtTime(55, now + 1.2);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+                    osc.start(now);
+                    osc.stop(now + 1.5);
+                }
+                else if (type === 'zombie_groan') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(75, now);
+                    osc.frequency.linearRampToValueAtTime(45, now + 0.6);
+                    
+                    const lfo = audioCtx.createOscillator();
+                    const lfoGain = audioCtx.createGain();
+                    lfo.frequency.value = 9;
+                    lfoGain.gain.value = 12;
+                    
+                    lfo.connect(lfoGain);
+                    lfoGain.connect(osc.frequency);
+                    lfo.start(now);
+                    
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                    
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                    lfo.stop(now + 0.6);
+                }
+                else if (type === 'wave_clear') {
+                    const notes = [261.63, 329.63, 392.00, 523.25];
+                    notes.forEach((freq, idx) => {
+                        const noteOsc = audioCtx.createOscillator();
+                        const noteGain = audioCtx.createGain();
+                        noteOsc.connect(noteGain);
+                        noteGain.connect(audioCtx.destination);
+                        
+                        noteOsc.type = 'triangle';
+                        noteOsc.frequency.setValueAtTime(freq, now + (idx * 0.12));
+                        noteGain.gain.setValueAtTime(0.12, now + (idx * 0.12));
+                        noteGain.gain.exponentialRampToValueAtTime(0.01, now + (idx * 0.12) + 0.25);
+                        
+                        noteOsc.start(now + (idx * 0.12));
+                        noteOsc.stop(now + (idx * 0.12) + 0.25);
+                    });
+                }
+                else if (type === 'alarm') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(580, now);
+                    osc.frequency.linearRampToValueAtTime(880, now + 0.25);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (e) {
+                console.log("Audio Error:", e);
+            }
+        }
+
+        function startBackgroundMusic() {
+            stopBackgroundMusic();
+            if (isMuted) return;
+
+            initAudio();
+            bgMusicBeat = 0;
+
+            bgMusicInterval = setInterval(() => {
+                if (isMuted || !audioCtx) return;
+                
+                try {
+                    const now = audioCtx.currentTime;
+                    
+                    const bassOsc = audioCtx.createOscillator();
+                    const bassGain = audioCtx.createGain();
+                    bassOsc.connect(bassGain);
+                    bassGain.connect(audioCtx.destination); // PERBAIKAN: gain -> bassGain
+                    
+                    bassOsc.type = 'triangle';
+                    
+                    const notes = [55, 55, 58, 55, 62, 55, 50, 48];
+                    const currentNote = notes[bgMusicBeat % notes.length];
+                    
+                    bassOsc.frequency.setValueAtTime(currentNote, now);
+                    bassGain.gain.setValueAtTime(0.2, now);
+                    bassGain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    
+                    bassOsc.start(now);
+                    bassOsc.stop(now + 0.4);
+
+                    if (bgMusicBeat % 4 === 0) {
+                        const snareOsc = audioCtx.createOscillator();
+                        const snareGain = audioCtx.createGain();
+                        snareOsc.connect(snareGain);
+                        snareGain.connect(audioCtx.destination); // PERBAIKAN: gain -> snareGain
+                        
+                        snareOsc.type = 'sawtooth';
+                        snareOsc.frequency.setValueAtTime(100, now);
+                        snareOsc.frequency.exponentialRampToValueAtTime(20, now + 0.15);
+                        
+                        snareGain.gain.setValueAtTime(0.1, now);
+                        snareGain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                        
+                        snareOsc.start(now);
+                        snareOsc.stop(now + 0.15);
+                    }
+
+                    bgMusicBeat++;
+                } catch (e) {
+                    console.log("Music interval error:", e);
+                }
+            }, 600);
+        }
+
+        function stopBackgroundMusic() {
+            if (bgMusicInterval) {
+                clearInterval(bgMusicInterval);
+                bgMusicInterval = null;
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const btn = document.getElementById('music-toggle');
+            if (isMuted) {
+                btn.innerHTML = "❌ Suara: BISU";
+                btn.classList.replace('bg-gray-800', 'bg-red-950');
+                stopBackgroundMusic();
+            } else {
+                btn.innerHTML = "🔊 Suara: AKTIF";
+                btn.classList.replace('bg-red-950', 'bg-gray-800');
+                initAudio();
+                startBackgroundMusic();
+            }
+        }
+
+        // --- STATE GAME UTAMA ---
+        let gameState = {
+            active: false,
+            players: 1,
+            hp: 100,
+            maxHp: 100,
+            score: 0,
+            wave: 1,
+            kills: 0,
+            zombies: [],
+            bossSpawned: false,
+            p1Typed: "",
+            p2Typed: "",
+            nextZombieId: 0,
+            lastSpawnTime: 0,
+            spawnInterval: 4000,
+            minSpawnInterval: 1200,
+            zombieSpeedMultiplier: 1.0,
+            gameLoopId: null,
+            startTime: null,
+            totalCorrectChars: 0,
+            wpm: 0
+        };
+
+        function calculateRealtimeWpm() {
+            if (!gameState.startTime) return 0;
+            const timePassedMinutes = (Date.now() - gameState.startTime) / 60000;
+            if (timePassedMinutes <= 0) return 0;
+            const calculatedWpm = Math.round((gameState.totalCorrectChars / 5) / timePassedMinutes);
+            return isNaN(calculatedWpm) || !isFinite(calculatedWpm) ? 0 : calculatedWpm;
+        }
+
+        function gameLoop() {
+            if (!gameState.active) return;
+
+            const stage = document.getElementById('game-stage');
+            const rect = stage.getBoundingClientRect();
+            const stageHeight = rect.height;
+
+            for (let i = gameState.zombies.length - 1; i >= 0; i--) {
+                const z = gameState.zombies[i];
+                z.posY += z.speed;
+
+                const zDom = document.getElementById(`zombie-${z.id}`);
+                if (zDom) {
+                    zDom.style.top = `${z.posY}%`;
+                }
+
+                if (z.posY >= 88) {
+                    const damage = z.isBoss ? 45 : 15;
+                    gameState.hp = Math.max(0, gameState.hp - damage);
+                    
+                    playSound('damage');
+                    triggerScreenShake();
+
+                    if (gameState.hp > 0 && gameState.hp <= 30) {
+                        setTimeout(() => playSound('alarm'), 350);
+                    }
+                    
+                    const laser = document.getElementById('laser-effect');
+                    laser.classList.add('opacity-100', 'bg-red-600/30');
+                    setTimeout(() => {
+                        laser.classList.remove('opacity-100', 'bg-red-600/30');
+                    }, 150);
+
+                    removeZombieFromScreen(z.id);
+                    gameState.zombies.splice(i, 1);
+
+                    if (z.isBoss) {
+                        gameState.bossSpawned = false;
+                    }
+
+                    if (gameState.hp <= 0) {
+                        triggerGameOver();
+                        return;
+                    }
+
+                    updateHudDisplay();
+                }
+            }
+
+            spawnZombie();
+
+            const expectedWave = Math.floor(gameState.kills / 10) + 1;
+            if (expectedWave > gameState.wave) {
+                gameState.wave = expectedWave;
+                gameState.zombieSpeedMultiplier += 0.12;
+                
+                playSound('wave_clear');
+
+                if (gameState.wave % 2 === 1 && !gameState.bossSpawned) {
+                    spawnBossZombie();
+                }
+                updateHudDisplay();
+            }
+
+            gameState.wpm = calculateRealtimeWpm();
+            document.getElementById('wpm-display').innerText = gameState.wpm;
+
+            gameState.gameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        function triggerScreenShake() {
+            const app = document.getElementById('app');
+            app.classList.add('shake-screen');
+            setTimeout(() => {
+                app.classList.remove('shake-screen');
+            }, 500);
+        }
+
+        function removeZombieFromScreen(id) {
+            const dom = document.getElementById(`zombie-${id}`);
+            if (dom) dom.remove();
+        }
+
+        function updateHudDisplay() {
+            const hpBar = document.getElementById('hp-bar');
+            const hpText = document.getElementById('hp-text');
+            const percentage = (gameState.hp / gameState.maxHp) * 100;
+            
+            hpBar.style.width = `${percentage}%`;
+            hpText.innerText = `${gameState.hp} / ${gameState.maxHp}`;
+
+            if (gameState.hp < 30) {
+                hpBar.className = "bg-red-700 h-full w-full rounded-full transition-all duration-300 animate-pulse shadow-[0_0_15px_rgba(220,38,38,0.8)]";
+            } else {
+                hpBar.className = "bg-red-600 h-full w-full rounded-full transition-all duration-300 shadow-[0_0_10px_rgba(239,68,68,0.5)]";
+            }
+
+            document.getElementById('wave-num').innerText = gameState.wave;
+            document.getElementById('score').innerText = gameState.score;
+        }
+
+        function shootZombie(zombie) {
+            playSound('shoot');
+            
+            const laser = document.getElementById('laser-effect');
+            laser.classList.add('opacity-100');
+            setTimeout(() => {
+                laser.classList.remove('opacity-100');
+            }, 80);
+
+            const scoreReward = zombie.isBoss ? 150 : (zombie.word.length * 10);
+            gameState.score += scoreReward;
+            gameState.kills += 1;
+
+            playSound('kill');
+            
+            spawnKillBlastEffect(zombie);
+
+            removeZombieFromScreen(zombie.id);
+            gameState.zombies = gameState.zombies.filter(z => z.id !== zombie.id);
+
+            if (zombie.isBoss) {
+                gameState.bossSpawned = false;
+            }
+
+            updateHudDisplay();
+        }
+
+        function spawnKillBlastEffect(zombie) {
+            const dom = document.getElementById(`zombie-${zombie.id}`);
+            if (!dom) return;
+
+            const rect = dom.getBoundingClientRect();
+            const stage = document.getElementById('game-stage');
+            const stageRect = stage.getBoundingClientRect();
+
+            const relativeLeft = rect.left - stageRect.left + (rect.width / 2);
+            const relativeTop = rect.top - stageRect.top + (rect.height / 2);
+
+            const blast = document.createElement('div');
+            blast.className = "absolute w-12 h-12 bg-emerald-500 rounded-full pointer-events-none z-30 transition-all duration-500 transform -translate-x-1/2 -translate-y-1/2 opacity-80 scale-50";
+            blast.style.left = `${relativeLeft}px`;
+            blast.style.top = `${relativeTop}px`;
+            
+            if (zombie.isBoss) {
+                blast.className = "absolute w-28 h-28 bg-red-600 rounded-full pointer-events-none z-30 transition-all duration-700 transform -translate-x-1/2 -translate-y-1/2 opacity-90 scale-50";
+            }
+
+            stage.appendChild(blast);
+
+            setTimeout(() => {
+                blast.style.transform = "translate(-50%, -50%) scale(2.5)";
+                blast.style.opacity = "0";
+            }, 10);
+
+            setTimeout(() => {
+                blast.remove();
+            }, 800);
+        }
+
+        function processInput(char, isPlayer2 = false) {
+            char = char.toLowerCase();
+            if (!/^[a-z0-9\-]$/.test(char)) return;
+
+            playSound('click');
+
+            if (gameState.players === 1) {
+                let targetZombie = null;
+                const inProgress = gameState.zombies.find(z => z.typedLength > 0);
+                
+                if (inProgress) {
+                    const expectedChar = inProgress.word[inProgress.typedLength];
+                    if (expectedChar === char) {
+                        targetZombie = inProgress;
+                    } else {
+                        inProgress.typedLength = 0;
+                        updateZombieWordDisplay(inProgress);
+                    }
+                }
+
+                if (!targetZombie) {
+                    const MathCandidates = gameState.zombies.filter(z => z.word[0] === char);
+                    if (MathCandidates.length > 0) {
+                        MathCandidates.sort((a, b) => b.posY - a.posY);
+                        targetZombie = MathCandidates[0];
+                    }
+                }
+
+                if (targetZombie) {
+                    targetZombie.typedLength++;
+                    gameState.totalCorrectChars++;
+                    updateZombieWordDisplay(targetZombie);
+                    
+                    gameState.p1Typed = targetZombie.word.substring(0, targetZombie.typedLength);
+                    document.getElementById('typed-text-p1').innerText = gameState.p1Typed.toUpperCase();
+
+                    if (targetZombie.typedLength >= targetZombie.word.length) {
+                        shootZombie(targetZombie);
+                        gameState.p1Typed = "";
+                        document.getElementById('typed-text-p1').innerText = "";
+                    }
+                } else {
+                    gameState.p1Typed = "";
+                    document.getElementById('typed-text-p1').innerText = "";
+                }
+            }
+            
+            else if (gameState.players === 2) {
+                const targetPlayer = isPlayer2 ? 2 : 1;
+                const typedDisplayId = isPlayer2 ? 'typed-text-p2' : 'typed-text-p1';
+                let targetZombie = null;
+                const activeBoss = gameState.zombies.find(z => z.isBoss);
+                
+                if (activeBoss) {
+                    const expectedChar = activeBoss.word[activeBoss.typedLength];
+                    if (expectedChar === char) {
+                        targetZombie = activeBoss;
+                    } else {
+                        activeBoss.typedLength = 0;
+                        updateZombieWordDisplay(activeBoss);
+                    }
+                } else {
+                    const inProgress = gameState.zombies.find(z => z.player === targetPlayer && z.typedLength > 0);
+                    
+                    if (inProgress) {
+                        const expectedChar = inProgress.word[inProgress.typedLength];
+                        if (expectedChar === char) {
+                            targetZombie = inProgress;
+                        } else {
+                            inProgress.typedLength = 0;
+                            updateZombieWordDisplay(inProgress);
+                        }
+                    }
+
+                    if (!targetZombie) {
+                        const candidates = gameState.zombies.filter(z => z.player === targetPlayer && z.word[0] === char);
+                        if (candidates.length > 0) {
+                            candidates.sort((a, b) => b.posY - a.posY);
+                            targetZombie = candidates[0];
+                        }
+                    }
+                }
+
+                if (targetZombie) {
+                    targetZombie.typedLength++;
+                    gameState.totalCorrectChars++;
+                    updateZombieWordDisplay(targetZombie);
+
+                    if (targetPlayer === 1) {
+                        gameState.p1Typed = targetZombie.word.substring(0, targetZombie.typedLength);
+                        document.getElementById('typed-text-p1').innerText = gameState.p1Typed.toUpperCase();
+                    } else {
+                        gameState.p2Typed = targetZombie.word.substring(0, targetZombie.typedLength);
+                        document.getElementById('typed-text-p2').innerText = gameState.p2Typed.toUpperCase();
+                    }
+
+                    if (targetZombie.typedLength >= targetZombie.word.length) {
+                        shootZombie(targetZombie);
+                        if (targetZombie.isBoss || targetPlayer === 1) {
+                            gameState.p1Typed = "";
+                            document.getElementById('typed-text-p1').innerText = "";
+                        }
+                        if (targetZombie.isBoss || targetPlayer === 2) {
+                            gameState.p2Typed = "";
+                            document.getElementById('typed-text-p2').innerText = "";
+                        }
+                    }
+                } else {
+                    if (targetPlayer === 1) {
+                        gameState.p1Typed = "";
+                        document.getElementById('typed-text-p1').innerText = "";
+                    } else {
+                        gameState.p2Typed = "";
+                        document.getElementById('typed-text-p2').innerText = "";
+                    }
+                }
+            }
+        }
+
+        function updateZombieWordDisplay(zombie) {
+            const wordTextDom = document.getElementById(`word-text-${zombie.id}`);
+            if (wordTextDom) {
+                let activeColor = "text-white";
+                if (gameState.players === 2) {
+                    activeColor = zombie.player === 1 ? "text-red-200" : "text-teal-200";
+                }
+                if (zombie.isBoss) {
+                    activeColor = "text-red-400";
+                }
+                wordTextDom.innerHTML = buildWordMarkup(zombie.word, zombie.typedLength, activeColor);
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (!gameState.active) return;
+            if (e.key.length !== 1) return;
+
+            const key = e.key.toLowerCase();
+
+            if (gameState.players === 2) {
+                const p1Keys = "qwertadsfgzxcvb12345";
+                const isP2Key = !p1Keys.includes(key);
+                processInput(key, isP2Key);
+            } else {
+                processInput(key, false);
+            }
+        });
+
+        const dummyInput = document.getElementById('dummy-input');
+        dummyInput.addEventListener('input', (e) => {
+            if (!gameState.active) return;
+            
+            const val = e.target.value;
+            if (val.length > 0) {
+                const lastChar = val[val.length - 1];
+                
+                if (gameState.players === 2) {
+                    const p1Keys = "qwertadsfgzxcvb12345";
+                    const isP2Key = !p1Keys.includes(lastChar.toLowerCase());
+                    processInput(lastChar, isP2Key);
+                } else {
+                    processInput(lastChar, false);
+                }
+                e.target.value = '';
+            }
+        });
+
+        document.getElementById('game-stage').addEventListener('click', () => {
+            if (gameState.active && window.innerWidth < 1024) {
+                focusDummyInput();
+            }
+        });
+
+        function triggerGameOver() {
+            gameState.active = false;
+            stopBackgroundMusic();
+            playSound('gameover');
+
+            // Kalkulasi WPM final saat game berakhir
+            gameState.wpm = calculateRealtimeWpm();
+
+            document.getElementById('final-score').innerText = gameState.score;
+            document.getElementById('final-wave').innerText = gameState.wave;
+            document.getElementById('final-kills').innerText = gameState.kills;
+            document.getElementById('final-wpm').innerText = gameState.wpm + " Kata/Menit";
+
+            document.getElementById('game-over-modal').classList.remove('hidden');
+        }
+
+        function focusDummyInput() {
+            const input = document.getElementById('dummy-input');
+            if (input) {
+                input.focus();
+            }
+        }
+
+        function buildWordMarkup(word, typedLength, activeColor) {
+            const typedPart = word.substring(0, typedLength);
+            const remainingPart = word.substring(typedLength);
+            
+            return `<span class="text-amber-400 font-extrabold bg-black/60 px-0.5 rounded shadow-sm drop-shadow-md">${typedPart.toUpperCase()}</span><span class="${activeColor} drop-shadow-[0_2px_2px_rgba(0,0,0,1)]">${remainingPart.toUpperCase()}</span>`;
+        }
+
+        function getZombieSVG(colorClass = "text-emerald-500", isBoss = false) {
+            const size = isBoss ? "w-28 h-28" : "w-16 h-16";
+            const skinColor = isBoss ? "#dc2626" : (colorClass.includes("red") ? "#ef4444" : (colorClass.includes("teal") ? "#0d9488" : "#10b981"));
+            const clothColor = isBoss ? "#450a0a" : "#1e293b";
+            const eyeColor = isBoss ? "#facc15" : "#f87171";
+
+            return `
+                <svg class="${size} zombie-sway select-none pointer-events-none" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M25 25 L30 10 L40 18 L50 8 L60 18 L70 10 L75 25 Z" fill="#475569" />
+                    <rect x="25" y="20" width="50" height="40" rx="10" fill="${skinColor}" />
+                    <circle cx="40" cy="35" r="7" fill="#ffffff" />
+                    <circle cx="40" cy="35" r="3" fill="${eyeColor}" />
+                    <circle cx="60" cy="35" r="5" fill="#ffffff" />
+                    <line x1="56" y1="35" x2="64" y2="35" stroke="#000" stroke-width="2"/>
+                    <rect x="48" y="42" width="4" height="6" rx="2" fill="#1e293b" />
+                    <rect x="38" y="50" width="24" height="8" rx="3" fill="#000" />
+                    <rect x="42" y="50" width="3" height="3" fill="#fef08a" />
+                    <rect x="55" y="50" width="3" height="3" fill="#fef08a" />
+                    <rect x="48" y="55" width="3" height="3" fill="#fef08a" />
+                    <path d="M30 60 L70 60 L80 95 L20 95 Z" fill="${clothColor}" />
+                    <path d="M45 68 L55 78 M55 68 L45 78" stroke="#ef4444" stroke-width="3" />
+                    <rect x="15" y="65" width="20" height="8" rx="4" fill="${skinColor}" transform="rotate(-15, 15, 65)" />
+                    <rect x="65" y="65" width="20" height="8" rx="4" fill="${skinColor}" transform="rotate(15, 85, 65)" />
+                    <circle cx="10" cy="70" r="2" fill="${eyeColor}"/>
+                    <circle cx="90" cy="70" r="2" fill="${eyeColor}"/>
+                </svg>
+            `;
+        }
+
+        function spawnZombie() {
+            const now = Date.now();
+            const currentInterval = Math.max(gameState.minSpawnInterval, gameState.spawnInterval - (gameState.wave * 250));
+
+            if (now - gameState.lastSpawnTime < currentInterval) return;
+            if (gameState.zombies.filter(z => !z.isBoss).length >= 6) return;
+
+            gameState.lastSpawnTime = now;
+
+            let difficulty = "easy";
+            const rand = Math.random();
+            if (gameState.wave >= 2 && rand > 0.6) difficulty = "medium";
+            if (gameState.wave >= 4 && rand > 0.85) difficulty = "hard";
+
+            const word = getNextWordFromPool(difficulty);
+            const id = gameState.nextZombieId++;
+            
+            const randomX = 5 + Math.random() * 75;
+            const baseSpeed = 0.05 + (Math.random() * 0.05);
+            const finalSpeed = baseSpeed * gameState.zombieSpeedMultiplier;
+
+            const randomPlayer = (gameState.players === 2) ? (Math.random() > 0.5 ? 1 : 2) : 1;
+
+            const zombieObj = {
+                id: id,
+                word: word,
+                typedLength: 0,
+                posX: randomX,
+                posY: 0,
+                speed: finalSpeed,
+                isBoss: false,
+                player: randomPlayer
+            };
+
+            gameState.zombies.push(zombieObj);
+
+            let borderStyle = "border-emerald-500/50 bg-emerald-950/80";
+            let colorClass = "text-emerald-500";
+            if (gameState.players === 2) {
+                borderStyle = randomPlayer === 1 ? "border-red-500/60 bg-red-950/80" : "border-teal-500/60 bg-teal-950/80";
+                colorClass = randomPlayer === 1 ? "text-red-500" : "text-teal-400";
+            }
+
+            const zombieDom = document.createElement('div');
+            zombieDom.id = `zombie-${id}`;
+            zombieDom.className = "absolute flex flex-col items-center transition-all duration-75 pointer-events-auto cursor-pointer zombie-sway";
+            zombieDom.style.left = `${randomX}%`;
+            zombieDom.style.top = `0%`;
+
+            zombieDom.innerHTML = `
+                <div class="px-2 py-1 border rounded shadow-md text-center max-w-xs ${borderStyle}">
+                    <div id="word-text-${id}" class="font-mono-tech text-base sm:text-lg tracking-wider font-bold">
+                        ${buildWordMarkup(word, 0, (gameState.players === 2 ? (randomPlayer === 1 ? "text-red-200" : "text-teal-200") : "text-white"))}
+                    </div>
+                </div>
+                ${getZombieSVG(colorClass, false)}
+            `;
+
+            zombieDom.addEventListener('click', () => {
+                if (window.innerWidth < 1024) focusDummyInput();
+            });
+
+            document.getElementById('zombie-container').appendChild(zombieDom);
+            
+            if (Math.random() > 0.65) {
+                playSound('zombie_groan');
+            }
+        }
+
+        function spawnBossZombie() {
+            if (gameState.bossSpawned) return;
+            gameState.bossSpawned = true;
+
+            const warningModal = document.getElementById('boss-warning');
+            const warningBox = document.getElementById('boss-warning-box');
+            
+            warningModal.classList.replace('opacity-0', 'opacity-100');
+            warningBox.classList.replace('scale-90', 'scale-100');
+            
+            playSound('boss_roar');
+
+            setTimeout(() => {
+                warningBox.classList.replace('scale-100', 'scale-90');
+                warningModal.classList.replace('opacity-100', 'opacity-0');
+
+                if (!gameState.active) return;
+
+                const word = getNextWordFromPool("boss");
+                const id = gameState.nextZombieId++;
+
+                const zombieObj = {
+                    id: id,
+                    word: word,
+                    typedLength: 0,
+                    posX: 20,
+                    posY: -5,
+                    speed: 0.025 * gameState.zombieSpeedMultiplier,
+                    isBoss: true,
+                    player: 1
+                };
+
+                gameState.zombies.push(zombieObj);
+
+                const zombieDom = document.createElement('div');
+                zombieDom.id = `zombie-${id}`;
+                zombieDom.className = "absolute flex flex-col items-center transition-all duration-100 pointer-events-auto cursor-pointer zombie-sway z-20";
+                zombieDom.style.left = `20%`;
+                zombieDom.style.right = `20%`;
+                zombieDom.style.top = `-5%`;
+
+                zombieDom.innerHTML = `
+                    <div class="px-5 py-3 border-4 border-red-600 bg-black/95 rounded-xl shadow-[0_0_25px_rgba(220,38,38,0.6)] text-center w-full max-w-2xl animate-pulse">
+                        <div class="text-xs text-red-500 font-bold tracking-widest uppercase mb-1">☠️ BOSS MUTAN RAKSASA ☠️</div>
+                        <div id="word-text-${id}" class="font-mono-tech text-xl sm:text-2xl tracking-widest font-extrabold text-red-400">
+                            ${buildWordMarkup(word, 0, "text-red-400")}
+                        </div>
+                    </div>
+                    ${getZombieSVG('text-red-600', true)}
+                `;
+
+                zombieDom.addEventListener('click', () => {
+                    if (window.innerWidth < 1024) focusDummyInput();
+                });
+
+                document.getElementById('zombie-container').appendChild(zombieDom);
+            }, 2500);
+        }
+
+        function startGame(mode = 1) {
+            initAudio();
+            gameState.active = true;
+            gameState.players = mode;
+            gameState.hp = 100;
+            gameState.score = 0;
+            gameState.wave = 1;
+            gameState.kills = 0;
+            gameState.zombies = [];
+            gameState.bossSpawned = false;
+            gameState.p1Typed = "";
+            gameState.p2Typed = "";
+            gameState.zombieSpeedMultiplier = 1.0;
+            
+            gameState.startTime = Date.now();
+            gameState.totalCorrectChars = 0;
+            gameState.wpm = 0;
+
+            document.getElementById('zombie-container').innerHTML = "";
+            document.getElementById('typed-text-p1').innerText = "";
+            document.getElementById('typed-text-p2').innerText = "";
+
+            initWordPools();
+
+            document.getElementById('player-mode-tag').innerText = "MODE: SINGLE PLAYER";
+            document.getElementById('input-box-p2').classList.add('hidden');
+            document.getElementById('coop-keyboard-info').classList.add('hidden');
+
+            updateHudDisplay();
+            document.getElementById('wpm-display').innerText = "0";
+
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('game-over-modal').classList.add('hidden');
+
+            startBackgroundMusic();
+            
+            gameState.lastSpawnTime = Date.now() - 2000;
+            gameState.gameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        function restartGame() {
+            startGame(gameState.players);
+        }
+
+        function quitToMenu() {
+            gameState.active = false;
+            stopBackgroundMusic();
+            if (gameState.gameLoopId) {
+                cancelAnimationFrame(gameState.gameLoopId);
+            }
+            document.getElementById('zombie-container').innerHTML = "";
+            document.getElementById('main-menu').classList.remove('hidden');
+            document.getElementById('game-over-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
